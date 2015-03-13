@@ -60,12 +60,20 @@ class Ivy2RedisServer():
 
     def run(self):
         while self.keep_running:
-            time.sleep(0.1)
             data = self.GPS.readline().strip()
             try:
                 self.driver.add_sentence(data, 2)
             except ValueError as e:
-                print("Value error, likely due to missing fields in the NMEA message. Error was: %s. Please report this issue at github.com/ros-drivers/nmea_navsat_driver, including a bag file with the NMEA sentences that caused it." % e)
+                print("Value error, likely due to missing fields in the NMEA message. ")
+	    key = "{0}.{1}".format("ground", "latlon_gm")
+	    msg = json.dumps(self.driver.current_pos)
+            if self.verbose:
+            	print("received message, key=%s, msg=%s" % (key, msg))
+            	sys.stdout.flush()
+            self.r.publish(key, msg)
+            self.r.set(key, msg)
+            time.sleep(0.1)
+
 
     def stop(self):
         self.keep_running = False

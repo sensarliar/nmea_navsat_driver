@@ -38,7 +38,7 @@ import libnmea_navsat_driver.parser
 
 class RosNMEADriver(object):
     def __init__(self):
-	self.current_pos = none
+	self.current_pos = None
 
     # Returns True if we successfully did something with the passed in
     # nmea_string
@@ -58,32 +58,33 @@ class RosNMEADriver(object):
         else:
             current_time = timestamp
 
-	current_fix = {"status":0,"latitude":0,"longitude":0,"altitude":0}	
+	current_fix = {"status":0,"latitude":0,"longitude":0,"altitude":0,"utc_time":0}	
         if  'GGA' in parsed_sentence:
             data = parsed_sentence['GGA']
             gps_qual = data['fix_type']
             if gps_qual == 0:
-                current_fix["status"] = 0
+                current_fix["status"] = "0"
             elif gps_qual == 1:
-                current_fix["status"] = 1
+                current_fix["status"] = "1"
             else:
-                current_fix["status"] = 0
+                current_fix["status"] = "0"
 
 
             latitude = data['latitude']
             if data['latitude_direction'] == 'S':
                 latitude = -latitude
-            current_fix["latitude"] = latitude
+            current_fix["latitude"] = str(latitude)
 
             longitude = data['longitude']
             if data['longitude_direction'] == 'W':
                 longitude = -longitude
-            current_fix["longitude"] = longitude
+            current_fix["longitude"] = str(longitude)
 
 
             # Altitude is above ellipsoid, so adjust for mean-sea-level
             altitude = data['altitude'] + data['mean_sea_level']
             current_fix["altitude"] = altitude
+	    current_fix["utc_time"] = str(data['utc_time'])
 	    print("Received a sentence GGA is ok " +
                           "lat and lon is: %s" % repr(current_fix))
            # return current_fix

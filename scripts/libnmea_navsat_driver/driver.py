@@ -58,34 +58,36 @@ class RosNMEADriver(object):
         else:
             current_time = timestamp
 
-	current_fix = {"status":0,"latitude":0,"longitude":0,"altitude":0}	
+	current_fix = {"status":0,"latitude":0,"longitude":0,"altitude":0,"utc_time":0,"ac_id":"24"}	
         if  'GGA' in parsed_sentence:
             data = parsed_sentence['GGA']
             gps_qual = data['fix_type']
             if gps_qual == 0:
-                current_fix["status"] = 0
+                current_fix["status"] = "0"
             elif gps_qual == 1:
-                current_fix["status"] = 1
+                current_fix["status"] = "1"
             else:
-                current_fix["status"] = 0
+                current_fix["status"] = "0"
 
 
             latitude = data['latitude']
             if data['latitude_direction'] == 'S':
                 latitude = -latitude
-            current_fix["latitude"] = latitude
+            current_fix["latitude"] = str(latitude)
 
             longitude = data['longitude']
             if data['longitude_direction'] == 'W':
                 longitude = -longitude
-            current_fix["longitude"] = longitude
+            current_fix["longitude"] = str(longitude)
 
 
             # Altitude is above ellipsoid, so adjust for mean-sea-level
             altitude = data['altitude'] + data['mean_sea_level']
-            current_fix["altitude"] = altitude
+            current_fix["altitude"] = str(altitude)
+	    current_fix["utc_time"] = str(data['utc_time'])
 	    print("Received a sentence GGA is ok " +
                           "lat and lon is: %s" % repr(current_fix))
+	    current_fix["ac_id"] = str(24)
            # return current_fix
 	    self.current_pos = current_fix
 
