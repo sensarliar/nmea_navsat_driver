@@ -90,6 +90,7 @@ class RosNMEADriver(object):
 	    current_fix["ac_id"] = str(24)
            # return current_fix
 	    self.current_pos = current_fix
+	    return True
 
         else:
             return False

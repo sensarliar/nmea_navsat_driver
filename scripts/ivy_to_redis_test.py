@@ -31,10 +31,11 @@ class Ivy2RedisServer():
         self.interface = IvyMessagesInterface(self.message_recv)
     	serial_port = '/dev/ttyUSB0'
     	serial_baud = 115200
-    	self.GPS = serial.Serial(port=serial_port, baudrate=serial_baud, timeout=2)
+    	self.GPS = serial.Serial(port=serial_port, baudrate=serial_baud, timeout=65)
 	self.driver = libnmea_navsat_driver.driver.RosNMEADriver()
         self.r = redis.StrictRedis(host=redishost, port=redisport, db=0)
         self.keep_running = True
+	self.gga_flag = False
         print("Connected to redis server %s on port %i" % (redishost, redisport))
 
     def message_recv(self, ac_id, msg):
@@ -62,7 +63,7 @@ class Ivy2RedisServer():
         while self.keep_running:
             data = self.GPS.readline().strip()
             try:
-                self.driver.add_sentence(data, 2)
+                self.gga_flag = self.driver.add_sentence(data, 2)
             except ValueError as e:
                 print("Value error, likely due to missing fields in the NMEA message. ")
 	    key = "{0}.{1}".format("ground", "latlon_gm")
@@ -70,9 +71,10 @@ class Ivy2RedisServer():
             if self.verbose:
             	print("received message, key=%s, msg=%s" % (key, msg))
             	sys.stdout.flush()
-            self.r.publish(key, msg)
-            self.r.set(key, msg)
-            time.sleep(0.1)
+	    if self.gga_flag:
+            	self.r.publish(key, msg)
+            	self.r.set(key, msg)
+            	time.sleep(0.1)
 
 
     def stop(self):
