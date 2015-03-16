@@ -43,53 +43,40 @@ class RosNMEADriver(object):
     # Returns True if we successfully did something with the passed in
     # nmea_string
     def add_sentence(self, nmea_string, frame_id, timestamp=None):
-        if not check_nmea_checksum(nmea_string):
+        #if not check_nmea_checksum(nmea_string):
            # print("Received a sentence with an invalid checksum. " +
            #               "Sentence was: %s" % repr(nmea_string))
-            return False
+         #   return False
+    	#if not re.match('^\$TXXX.*$', nmea_string):
+        #	logger.debug("Regex didn't match, sentence not valid NMEA? Sentence was: %s"
+         #            % repr(nmea_string))
+       	#	return False
 
-        parsed_sentence = libnmea_navsat_driver.parser.parse_nmea_sentence(nmea_string)
+        #parsed_sentence = libnmea_navsat_driver.parser.parse_nmea_sentence(nmea_string)
+	parsed_sentence = nmea_string
         if not parsed_sentence:
          #   print("Failed to parse NMEA sentence. Sentece was: %s" % nmea_string)
             return False
 
-        if timestamp:
-            current_time = timestamp
-        else:
-            current_time = timestamp
-
-	current_fix = {"status":0,"latitude":0,"longitude":0,"altitude":0,"utc_time":0,"ac_id":"24"}	
-        if  'GGA' in parsed_sentence:
-            data = parsed_sentence['GGA']
-            gps_qual = data['fix_type']
-            if gps_qual == 0:
-                current_fix["status"] = "0"
-            elif gps_qual == 1:
-                current_fix["status"] = "1"
-            else:
-                current_fix["status"] = "0"
 
 
-            latitude = data['latitude']
-            if data['latitude_direction'] == 'S':
-                latitude = -latitude
-            current_fix["latitude"] = str(latitude)
+	current_fix = {"status":0,"latitude":0,"longitude":0,"altitude":0,"utc_time":0,"ac_id":"24"}
+	tempx1= parsed_sentence[0:4]
+	tempx2= parsed_sentence[0:4]
 
-            longitude = data['longitude']
-            if data['longitude_direction'] == 'W':
-                longitude = -longitude
-            current_fix["longitude"] = str(longitude)
+        if  "$TXXX" == str(parsed_sentence[0:5]):
+	    current_fix["utc_time"] = str(parsed_sentence[19:28])
+	    latitude_str = str(parsed_sentence[28:39])    
+	    current_fix["latitude"] = str(libnmea_navsat_driver.parser.convert_latitude(latitude_str))
 
-
-            # Altitude is above ellipsoid, so adjust for mean-sea-level
-            altitude = data['altitude'] + data['mean_sea_level']
-            current_fix["altitude"] = str(altitude)
-	    current_fix["utc_time"] = str(data['utc_time'])
+	    longitude_str = str(parsed_sentence[40:52])    
+	    current_fix["longitude"] = str(libnmea_navsat_driver.parser.convert_longitude(longitude_str))
 	    print("Received a sentence GGA is ok " +
                           "lat and lon is: %s" % repr(current_fix))
 	    current_fix["ac_id"] = str(24)
            # return current_fix
 	    self.current_pos = current_fix
+	    return True
 
         else:
             return False

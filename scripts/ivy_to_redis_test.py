@@ -11,6 +11,8 @@ import os
 import serial
 import libnmea_navsat_driver.driver
 import json
+import string
+import struct
 
 # if PAPARAZZI_SRC not set, then assume the tree containing this
 # file is a reasonable substitute
@@ -31,7 +33,7 @@ class Ivy2RedisServer():
         self.interface = IvyMessagesInterface(self.message_recv)
     	serial_port = '/dev/ttyUSB0'
     	serial_baud = 115200
-    	self.GPS = serial.Serial(port=serial_port, baudrate=serial_baud, timeout=65)
+    	self.GPS = serial.Serial(port=serial_port, baudrate=serial_baud, timeout=2)
 	self.driver = libnmea_navsat_driver.driver.RosNMEADriver()
         self.r = redis.StrictRedis(host=redishost, port=redisport, db=0)
         self.keep_running = True
@@ -62,8 +64,14 @@ class Ivy2RedisServer():
     def run(self):
         while self.keep_running:
             data = self.GPS.readline().strip()
+	    tempxx = ""
+	    #i = 0
+	    #for ixx in data:
+		#temp2 = hex(ord(ixx))
+	    	#tempxx += str(temp2)
             try:
-                self.gga_flag = self.driver.add_sentence(data, 2)
+		if data != "":
+                	self.gga_flag = self.driver.add_sentence(data, 2)
             except ValueError as e:
                 print("Value error, likely due to missing fields in the NMEA message. ")
 	    key = "{0}.{1}".format("ground", "latlon_gm")
