@@ -36,6 +36,8 @@ class Ivy2RedisServer():
     	self.GPS = serial.Serial(port=serial_port, baudrate=serial_baud, timeout=2)
 	self.driver = libnmea_navsat_driver.driver.RosNMEADriver()
         self.r = redis.StrictRedis(host=redishost, port=redisport, db=0)
+	icInfo = {0x24,0x49,0x43,0x4a,0x43,0x00,0x0c,0x00,0x00,0x00,0x00,0x2b,0x0d,0x0a}
+	self.GPS.write(icInfo)
         self.keep_running = True
 	self.gga_flag = False
         print("Connected to redis server %s on port %i" % (redishost, redisport))

@@ -31,6 +31,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import math
+import string
 
 from libnmea_navsat_driver.checksum_utils import check_nmea_checksum
 import libnmea_navsat_driver.parser
@@ -61,11 +62,15 @@ class RosNMEADriver(object):
 
 
 	current_fix = {"status":0,"latitude":0,"longitude":0,"altitude":0,"utc_time":0,"ac_id":"24"}
-	tempx1= parsed_sentence[0:4]
-	tempx2= parsed_sentence[0:4]
+	tempx1= ord(parsed_sentence[20])
+	tempx2= parsed_sentence[19]
 
         if  "$TXXX" == str(parsed_sentence[0:5]):
-	    current_fix["utc_time"] = str(parsed_sentence[19:28])
+	    utc_time_str = str((ord(parsed_sentence[19])-ord("0"))*10+ord(parsed_sentence[20])-ord("0")+8)+":"
+	    utc_time_str += str(parsed_sentence[21:23])+":"
+	    utc_time_str += str(parsed_sentence[23:28])+":"
+	    current_fix["utc_time"] = utc_time_str
+
 	    latitude_str = str(parsed_sentence[28:39])    
 	    current_fix["latitude"] = str(libnmea_navsat_driver.parser.convert_latitude(latitude_str))
 
