@@ -10,4 +10,6 @@ This package has no released Code API.
 
 The ROS API documentation and other information can be found at http://ros.org/wiki/nmea_navsat_driver
 
-./nmea_navsat_driver/ivy_to_redis_test.py is main function.
+./nmea_navsat_driver/scripts/ivy_to_redis_test.py is main function,for the DBW dev;
+./nmea_navsat_driver/scripts/ivy_to_redis.py is main function for simulation fly.
+
